@@ -59,7 +59,7 @@ const App = () => {
         const Y = data.map(item => {
           const [minutes, seconds]=(item.Time).split(':')
           return new Date(1970, 0, 1, 0, minutes, seconds);
-      });
+        });
         const maxY = d3.max(Y);
         const minY = d3.min(Y);
         const timeFormat = d3.timeFormat('%M:%S');
@@ -91,16 +91,49 @@ const App = () => {
           .attr('cx', (d, i) => xScale(d[0]))
           .attr('cy', (d, i) => yScale(d[1]))
           .attr('r', 10)
-          .style('fill', '#233')
+          .style('fill', (d, i) => data[i].Doping ? '#d62728' : '#1f77b4')
           .attr('transform', 'translate(60, 20)')
           .on('mouseover', function (event, d) {
             const i = this.getAttribute('index');
             tooltip.transition().duration(200).style('opacity', 0.9);
-            tooltip.html(data[i].Name + '<br>Time:' + data[i].Time + '<br>Year:' + data[i].Year).style('left', 40 + 'px');
-          })
+            tooltip.attr('data-year', data[i].Year);
+            tooltip.html(data[i].Name + '<br>Time:' + data[i].Time + '<br>Year:' + data[i].Year)
+                    .style('left', (event.pageX + 5) + 'px')
+                    .style('top', (event.pageY - 60) + 'px');
+          })       
           .on('mouseout', function () {
             tooltip.transition().duration(300).style('opacity', 0);
-          });
+          }
+        );  
+        // Legend
+        const legend = svgContainer.append('g')
+          .attr('id', 'legend')
+          .attr('transform', 'translate(900, 50)');
+
+        const legendData = [
+          { label: 'No doping allegations', color: '#1f77b4' },
+          { label: 'Doping allegations', color: '#d62728' }
+        ];
+
+        legend.selectAll('rect')
+          .data(legendData)
+          .enter()
+          .append('rect')
+          .attr('x', 0)
+          .attr('y', (d, i) => i * 20)
+          .attr('width', 10)
+          .attr('height', 10)
+          .style('fill', d => d.color);
+
+        legend.selectAll('text')
+          .data(legendData)
+          .enter()
+          .append('text')
+          .attr('x', 20)
+          .attr('y', (d, i) => i * 20 + 9)
+          .text(d => d.label);  
+    
+  
       })
       .catch(e => console.log(e));
   }, []);
